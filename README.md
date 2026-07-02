@@ -4,7 +4,7 @@ Real-time LLM cost & routing intelligence dashboard. Reads historical cost/usage
 data from Langfuse and real-time counters from Redis to answer one question for
 AI teams: **"is our smart router actually saving money, and can we prove it?"**
 
-Built as the Day 3 companion to `fazle-llm-cost-router` (the FastAPI
+Built as the companion to `fazle-llm-cost-router` (the FastAPI
 router that makes the actual Gemini/GPT-4o routing decisions).
 
 ## Features
