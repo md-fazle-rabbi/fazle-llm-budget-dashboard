@@ -1,13 +1,12 @@
-"""Langfuse Metrics API v2 + Observations API v2 wrapper — async-first.
-"""
+"""Langfuse Metrics API v2 + Observations API v2 wrapper — async-first."""
 
 import re
 from datetime import datetime, timezone
 
 from langfuse import get_client
 
-from config import settings
-from schemas import AuditLogEntry, CostComparison, CostMetric, RoutingDecision
+from app.config import settings
+from app.schemas import AuditLogEntry, CostComparison, CostMetric, RoutingDecision
 
 _PII_PATTERNS = [
     re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+"),
@@ -18,6 +17,7 @@ _ZERO_COST_EPSILON = 1e-9
 
 
 def _mask_pii(text: str) -> str:
+    """OWASP LLM02:2025।"""
     masked = text
     for pattern in _PII_PATTERNS:
         masked = pattern.sub("[REDACTED]", masked)
@@ -91,6 +91,7 @@ async def fetch_cost_metrics(from_ts: datetime, to_ts: datetime) -> list[CostMet
 
 
 async def build_cost_comparison(from_ts: datetime, to_ts: datetime) -> CostComparison:
+    """Gemini (actual/shadow) cost vs GPT-4o counterfactual cost — headline ROI number।"""
     metrics = await fetch_cost_metrics(from_ts, to_ts)
     total_tokens = sum(m.total_tokens for m in metrics)
     query_count = sum(m.request_count for m in metrics)
@@ -132,7 +133,7 @@ async def fetch_recent_audit_entries(limit: int = 50) -> list[AuditLogEntry]:
             timestamp=obs.start_time or datetime.now(timezone.utc),
             model_selected=obs.model or "unknown", # type: ignore
             routing_reason=(obs.metadata or {}).get("routing_reason", "n/a"),
-            cost_usd=float(calculated_cost or 0.0), # type: ignore
+            cost_usd=obs.calculated_total_cost or 0.0, # type: ignore
             latency_ms=obs.latency or 0.0,
         )
         entries.append(

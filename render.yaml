@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: fazle-llm-budget-dashboard
+    runtime: docker
+    region: singapore
+    plan: starter
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_BASE_URL
+        value: https://cloud.langfuse.com
+      - key: LANGFUSE_PROJECT_ID
+        sync: false
+      - key: CACHE_TTL_SECONDS
+        value: "30"
+      - key: REDIS_TIMELINE_WINDOW_SECONDS
+        value: "604800"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: fazle-dashboard-cache
+          property: connectionString
+
+  - type: keyvalue
+    name: fazle-dashboard-cache
+    plan: starter
+    region: singapore
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
