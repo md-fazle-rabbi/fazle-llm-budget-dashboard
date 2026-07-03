@@ -67,7 +67,6 @@ uv sync
 docker run -d --name dev-redis -p 6379:6379 redis:7-alpine
 
 cp .env.example .env
-# .env খুলে Langfuse public/secret key বসাও
 
 uv run python scripts/seed_demo_data.py   # optional: fake data for testing
 
