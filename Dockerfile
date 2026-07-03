@@ -17,6 +17,7 @@ COPY .streamlit/ ./.streamlit/
 RUN uv sync --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH=/app
 
 EXPOSE 8501
 
