@@ -12,8 +12,29 @@ _C = {
     "muted": "#B2BEC3",
 }
 
+_DARK = {
+    "bg": "#0E1117",
+    "card": "#1C1E26",
+    "card_alt": "#22242E",
+    "text": "#FAFAFA",
+    "grid": "#2A2C38",
+}
+
+
+def _apply_dark_layout(fig: go.Figure, title: str, **extra) -> go.Figure:
+    fig.update_layout(
+        title=dict(text=title, font=dict(color=_DARK["text"])),
+        paper_bgcolor=_DARK["bg"],
+        plot_bgcolor=_DARK["bg"],
+        font=dict(color=_DARK["text"]),
+        margin=dict(t=60, b=40, l=40, r=30, pad=4),
+        **extra,
+    )
+    return fig
+
 
 def tokens_saved_chart(cache_stats: dict[str, int]) -> go.Figure:
+    """Tokens Saved vs Baseline"""
     tokens_saved = cache_stats.get("tokens_saved", 0)
     tokens_processed = cache_stats.get("tokens_processed", 0)
     baseline = tokens_processed + tokens_saved
@@ -26,16 +47,17 @@ def tokens_saved_chart(cache_stats: dict[str, int]) -> go.Figure:
                 marker_color=[_C["muted"], _C["secondary"]],
                 text=[f"{baseline:,}", f"{tokens_processed:,}"],
                 textposition="outside",
+                textfont=dict(color=_DARK["text"]),
             )
         ]
     )
-    fig.update_layout(
+    return _apply_dark_layout(
+        fig,
         title=f"Tokens Saved via Caching: {tokens_saved:,} tokens",
-        yaxis_title="Total Tokens",
-        template="plotly_white",
+        yaxis=dict(title="Total Tokens", color=_DARK["text"], gridcolor=_DARK["grid"], automargin=True),
+        xaxis=dict(color=_DARK["text"], automargin=True),
         showlegend=False,
     )
-    return fig
 
 
 def cost_per_1k_queries_chart(comparison: CostComparison) -> go.Figure:
@@ -56,16 +78,19 @@ def cost_per_1k_queries_chart(comparison: CostComparison) -> go.Figure:
                 marker_color=[_C["primary"], _C["danger"]],
                 text=[f"${yours:.2f}", f"${gpt4:.2f}"],
                 textposition="outside",
+                textfont=dict(color=_DARK["text"]),
             )
         ]
     )
-    fig.update_layout(
+    return _apply_dark_layout(
+        fig,
         title=f"Cost per 1,000 Queries — {comparison.savings_pct:.1f}% savings",
-        yaxis_title="USD per 1,000 queries",
-        template="plotly_white",
+        yaxis=dict(
+            title="USD per 1,000 queries", color=_DARK["text"], gridcolor=_DARK["grid"], automargin=True
+        ),
+        xaxis=dict(color=_DARK["text"], automargin=True),
         showlegend=False,
     )
-    return fig
 
 
 def model_distribution_pie(model_aggregates: dict[str, dict]) -> go.Figure:
@@ -79,15 +104,20 @@ def model_distribution_pie(model_aggregates: dict[str, dict]) -> go.Figure:
                 values=values,
                 hole=0.45,
                 marker_colors=[_C["primary"], _C["secondary"], _C["warning"], _C["danger"]],
+                textfont=dict(color=_DARK["text"]),
             )
         ]
     )
-    fig.update_layout(title="Model Distribution (by request count)", template="plotly_white")
-    return fig
+    return _apply_dark_layout(
+        fig,
+        title="Model Distribution (by request count)",
+        legend=dict(font=dict(color=_DARK["text"])),
+    )
 
 
 def routing_history_table(decisions: list[RoutingDecision]) -> go.Figure:
     recent = sorted(decisions, key=lambda d: d.timestamp, reverse=True)[:25]
+    row_colors = [_DARK["card"] if i % 2 == 0 else _DARK["card_alt"] for i in range(len(recent))]
 
     fig = go.Figure(
         data=[
@@ -95,8 +125,9 @@ def routing_history_table(decisions: list[RoutingDecision]) -> go.Figure:
                 header=dict(
                     values=["Timestamp", "Model", "Reason", "Cost ($)", "Latency (ms)", "Cache?"],
                     fill_color=_C["primary"],
-                    font=dict(color="white"),
+                    font=dict(color="white", size=13),
                     align="left",
+                    height=32,
                 ),
                 cells=dict(
                     values=[
@@ -107,16 +138,19 @@ def routing_history_table(decisions: list[RoutingDecision]) -> go.Figure:
                         [f"{d.latency_ms:.0f}" for d in recent],
                         ["✅" if d.cache_hit else "—" for d in recent],
                     ],
+                    fill_color=[row_colors] * 6,
+                    font=dict(color=_DARK["text"], size=12),
                     align="left",
+                    height=28,
                 ),
             )
         ]
     )
-    fig.update_layout(title="Recent Routing Decisions", template="plotly_white")
-    return fig
+    return _apply_dark_layout(fig, title="Recent Routing Decisions")
 
 
 def monthly_projection_chart(comparison: CostComparison) -> go.Figure:
+    """10K/100K/1M query volume-এ projected monthly savings — sales closer।"""
     if comparison.query_count == 0:
         per_query_yours = per_query_gpt4 = 0.0
     else:
@@ -141,11 +175,13 @@ def monthly_projection_chart(comparison: CostComparison) -> go.Figure:
             marker_color=_C["danger"],
         )
     )
-    fig.update_layout(
+    return _apply_dark_layout(
+        fig,
         title="Projected Monthly Cost by Query Volume",
-        xaxis_title="Monthly Queries",
-        yaxis_title="Projected USD / month",
+        xaxis=dict(title="Monthly Queries", color=_DARK["text"], automargin=True),
+        yaxis=dict(
+            title="Projected USD / month", color=_DARK["text"], gridcolor=_DARK["grid"], automargin=True
+        ),
         barmode="group",
-        template="plotly_white",
+        legend=dict(font=dict(color=_DARK["text"])),
     )
-    return fig

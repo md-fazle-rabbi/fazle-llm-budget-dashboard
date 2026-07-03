@@ -13,6 +13,7 @@ RUN uv sync --no-dev --no-install-project
 
 COPY app/ ./app/
 COPY scripts/ ./scripts/
+COPY .streamlit/ ./.streamlit/
 RUN uv sync --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"

@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 import streamlit as st
+from pydantic import ValidationError
 
 from app.audit_panel import render_audit_panel
 from app.charts import (
@@ -49,7 +50,7 @@ with st.sidebar:
         st.link_button(
             "🔗 View raw traces in Langfuse",
             f"{settings.langfuse_base_url}/project/{settings.langfuse_project_id}/traces",
-            use_container_width=True,
+            width="stretch",
         )
 
 if auto_refresh:
@@ -61,8 +62,22 @@ from_ts = to_ts - timedelta(hours=window_hours)
 with st.spinner("Fetching cost data from Langfuse..."):
     try:
         comparison = run_async(build_cost_comparison(from_ts, to_ts))
+    except ValidationError as exc:
+        st.error(
+            "❌ **Pydantic ValidationError while building the cost comparison.** "
+            "Langfuse's response shape didn't match what `app/schemas.py` expects. "
+            "Check `uv pip show langfuse` — a Langfuse SDK upgrade/downgrade is the "
+            "most common cause of this."
+        )
+        st.exception(exc)
+        st.stop()
     except RuntimeError as exc:
         st.error(f"Langfuse fetch failed: {exc}")
+        st.caption(
+            "If this mentions an attribute error, your installed `langfuse` SDK version "
+            "may use different method names than expected. Run `uv pip show langfuse` "
+            "to check the version."
+        )
         st.stop()
 
 if comparison.gemini_is_shadow_cost:
@@ -93,15 +108,15 @@ with st.spinner("Reading real-time Redis aggregates..."):
 
 c1, c2 = st.columns(2)
 with c1:
-    st.plotly_chart(cost_per_1k_queries_chart(comparison), use_container_width=True)
+    st.plotly_chart(cost_per_1k_queries_chart(comparison), width="stretch", theme=None)
 with c2:
-    st.plotly_chart(tokens_saved_chart(cache_stats), use_container_width=True)
+    st.plotly_chart(tokens_saved_chart(cache_stats), width="stretch", theme=None)
 
 c3, c4 = st.columns(2)
 with c3:
-    st.plotly_chart(model_distribution_pie(model_aggregates), use_container_width=True)
+    st.plotly_chart(model_distribution_pie(model_aggregates), width="stretch", theme=None)
 with c4:
-    st.plotly_chart(monthly_projection_chart(comparison), use_container_width=True)
+    st.plotly_chart(monthly_projection_chart(comparison), width="stretch", theme=None)
 
 st.divider()
 st.subheader("📜 Routing Decision History")
@@ -126,7 +141,7 @@ if recent_events:
         )
         for e in recent_events
     ]
-    st.plotly_chart(routing_history_table(decisions), use_container_width=True)
+    st.plotly_chart(routing_history_table(decisions), width="stretch", theme=None)
 else:
     st.info("No routing events recorded in this window yet. Run scripts/seed_demo_data.py to test.")
 
