@@ -23,11 +23,11 @@ services:
       - key: REDIS_URL
         fromService:
           type: keyvalue
-          name: fazle-dashboard-cache
+          name: fazle-llm-cost-router-cache
           property: connectionString
 
   - type: keyvalue
-    name: fazle-dashboard-cache
+    name: fazle-llm-cost-router-cache
     plan: starter
     region: singapore
     maxmemoryPolicy: allkeys-lru
