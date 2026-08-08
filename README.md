@@ -28,7 +28,7 @@ Two data sources, two purposes:
 | Redis    | Real-time counters (cache hits, timeline) | Sub-millisecond|
 
 This dashboard is **read-only** with respect to LLM providers — it never
-calls Gemini or GPT-4o itself. All model calls happen in the Day 2 router;
+calls Gemini or GPT-4o itself. All model calls happen in the router;
 this app only visualizes what was already logged.
 
 ## Tech stack
@@ -57,7 +57,7 @@ scripts/
 - Python 3.14+
 - [uv](https://docs.astral.sh/uv/)
 - Docker (for local Redis, or full container test)
-- A Langfuse project with at least one logged generation (from the Day 2 router)
+- A Langfuse project with at least one logged generation
 
 ## Setup
 
