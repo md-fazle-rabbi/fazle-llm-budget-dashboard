@@ -120,4 +120,6 @@ the Langfuse secrets, deploy.
 ---
 
 **Author:** 
-**Fazle Rabbi** — AI Engineer
+**Fazle Rabbi** 
+Full-Stack AI Engineer specializing in secure production AI systems.
+Contact: mfrabbi.ai@gmail.com | LinkedIn: https://www.linkedin.com/in/fazle-rabbi-ai/
